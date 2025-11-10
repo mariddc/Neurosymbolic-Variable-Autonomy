@@ -1,7 +1,13 @@
 from gymnasium.envs.registration import register
-from my_envs.DistributionalShiftEnv import DistributionalShiftEnv
 
-register(
-    id="MiniGrid-DistributionalShiftEnv-v0",
-    entry_point="my_envs.DistributionalShiftEnv:DistributionalShiftEnv",
-)
+def register_envs():
+    register(
+        id="MiniGrid-DistributionalShift-Train-v0",
+        entry_point="my_envs.DistributionalShiftEnv:DistributionalShiftEnv",
+        kwargs={"is_testing": False},
+    )
+    register(
+        id="MiniGrid-DistributionalShift-Test-v0",
+        entry_point="my_envs.DistributionalShiftEnv:DistributionalShiftEnv",
+        kwargs={"is_testing": True},
+    )
