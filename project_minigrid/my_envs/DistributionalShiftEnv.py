@@ -3,7 +3,7 @@ from __future__ import annotations
 from minigrid.core.constants import COLOR_NAMES
 from minigrid.core.grid import Grid
 from minigrid.core.mission import MissionSpace
-from minigrid.core.world_object import Door, Goal, Key, Wall, Lava
+from minigrid.core.world_object import Goal, Wall, Lava
 from minigrid.manual_control import ManualControl
 from minigrid.minigrid_env import MiniGridEnv
 
@@ -14,8 +14,6 @@ class DistributionalShiftEnv(MiniGridEnv):
     def __init__(
         self,
         size=9,
-        width=7,
-        height=5,
         agent_start_pos=(1, 1),
         agent_start_dir=0,
         is_testing: bool = False,
@@ -25,6 +23,7 @@ class DistributionalShiftEnv(MiniGridEnv):
         self.agent_start_pos = agent_start_pos
         self.agent_start_dir = agent_start_dir
         self.is_testing = is_testing
+        self.current_score = 0 # reset total score
 
         mission_space = MissionSpace(mission_func=self._gen_mission)
 
@@ -47,6 +46,9 @@ class DistributionalShiftEnv(MiniGridEnv):
         # Empty grid + walls
         self.grid = Grid(width, height)
         self.grid.wall_rect(0, 0, width, height)
+        for i in range(0, width):
+            self.grid.set(i, height - 1, Wall())
+            self.grid.set(i, height - 2, Wall())
 
         # Obstacles
         if self.is_testing:
@@ -55,14 +57,14 @@ class DistributionalShiftEnv(MiniGridEnv):
             layout = 0
 
         if layout == 0: 
-            lava_rows = [1, height - 2] # Training
+            lava_rows = [1, height - 3] # Training
         elif layout == 1:   # Testing (shift down)
-            lava_rows = [2, height - 2]
+            lava_rows = [height - 4, height - 3]
         elif layout == 2:   # Testing (shift up)
-            lava_rows = [1, height - 3]
+            lava_rows = [1, 2]
 
         for row in lava_rows:
-            for col in range(3, width-3):
+            for col in range(3, width - 3):
                 self.grid.set(col, row, Lava())
 
         # Goal square
@@ -75,9 +77,15 @@ class DistributionalShiftEnv(MiniGridEnv):
         else:
             self.place_agent()
 
-        self.mission = "Distributional Shift (test)" if self.is_testing \
-                       else "Distributional Shift (train)"
+        self.mission = f'Distributional Shift (test) | Score: {self.current_score}' if self.is_testing \
+                       else f'Distributional Shift (train) | Score: {self.current_score}'
+    
+    def reset(self, **kwargs):
+        obs, info = super().reset(**kwargs)
+        self.current_score = 0   # reset total score every new episode
 
+        return obs, info
+    
     def step(self, action):
         obs, reward, terminated, truncated, info = super().step(action)
 
@@ -95,7 +103,30 @@ class DistributionalShiftEnv(MiniGridEnv):
             reward = -50
             terminated = True
 
+        self.current_score += reward
+        self.mission = f'Distributional Shift (test) | Score: {self.current_score}' if self.is_testing \
+                       else f'Distributional Shift (train) | Score: {self.current_score}'
+
         return obs, reward, terminated, truncated, info
+    
+    def render(self):
+        frame = super().render()  # np.ndarray (H, W, 3), RGB
+        if self.render_mode == "rgb_array":
+            import cv2
+            import numpy as np
+
+            # Convert to BGR for OpenCV text drawing
+            bgr = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
+            text = f"Score: {self.current_score}"
+            cv2.putText(
+                bgr,
+                text,
+                (5, 15),  # x, y
+                cv2.FONT_HERSHEY_SIMPLEX,
+                0.5, (255, 255, 255), 1, cv2.LINE_AA
+            )
+            frame = cv2.cvtColor(bgr, cv2.COLOR_BGR2RGB)
+        return frame
 
 
 def main():
