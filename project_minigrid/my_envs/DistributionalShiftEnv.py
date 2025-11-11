@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from minigrid.core.constants import COLOR_NAMES
 from minigrid.core.grid import Grid
 from minigrid.core.mission import MissionSpace
 from minigrid.core.world_object import Goal, Wall, Lava
@@ -108,25 +107,6 @@ class DistributionalShiftEnv(MiniGridEnv):
                        else f'Distributional Shift (train) | Score: {self.current_score}'
 
         return obs, reward, terminated, truncated, info
-    
-    def render(self):
-        frame = super().render()  # np.ndarray (H, W, 3), RGB
-        if self.render_mode == "rgb_array":
-            import cv2
-            import numpy as np
-
-            # Convert to BGR for OpenCV text drawing
-            bgr = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
-            text = f"Score: {self.current_score}"
-            cv2.putText(
-                bgr,
-                text,
-                (5, 15),  # x, y
-                cv2.FONT_HERSHEY_SIMPLEX,
-                0.5, (255, 255, 255), 1, cv2.LINE_AA
-            )
-            frame = cv2.cvtColor(bgr, cv2.COLOR_BGR2RGB)
-        return frame
 
 
 def main():

@@ -11,3 +11,7 @@ def register_envs():
         entry_point="my_envs.DistributionalShiftEnv:DistributionalShiftEnv",
         kwargs={"is_testing": True},
     )
+    register(
+        id="MiniGrid-SafeExploration-v0",
+        entry_point="my_envs.SafeExplorationEnv:SafeExplorationEnv"
+    )
