@@ -1,4 +1,6 @@
-project_minigrid/
+# Project Structure
+
+```project_minigrid/
 │
 ├── my_envs/
 │   ├── __init__.py
@@ -21,4 +23,4 @@ project_minigrid/
 │
 ├── environment.yml
 ├── requirements.txt
-└── README.md
+└── README.md```
