@@ -51,7 +51,8 @@ class DistributionalShiftEnv(MiniGridEnv):
 
         # Obstacles
         if self.is_testing:
-            layout = random.choice([1, 2])
+            #layout = random.choice([1, 2])
+            layout = 2
         else:
             layout = 0
 
