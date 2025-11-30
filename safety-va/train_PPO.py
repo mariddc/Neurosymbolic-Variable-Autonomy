@@ -1,15 +1,18 @@
 import safety_gymnasium
 from stable_baselines3 import PPO
 from src.wrappers.SafetyGymSB3Wrapper import SafetyGymSB3Wrapper
+from src.wrappers.CostPenaltyWrapper import CostPenaltyWrapper
     
 def main():
     env_id = "SafetyPointGoal2-v0"
     policy = "MlpPolicy"
-    learning_timesteps = 100
-    log_id = f'ppo_{env_id}_{policy}_{learning_timesteps}'
+    learning_timesteps = 10_000
+
+    log_id = f'ppo_{env_id}_{policy}_{learning_timesteps}_shapedreward'
 
     env = safety_gymnasium.make(env_id)
     env = SafetyGymSB3Wrapper(env)
+    env = CostPenaltyWrapper(env, penalty_coef=1.0)
 
     # Create PPO model
     model = PPO(
@@ -21,7 +24,11 @@ def main():
 
     # Train model
     print("Training...")
-    model.learn(total_timesteps=learning_timesteps, tb_log_name=log_id)
+    model.learn(
+        total_timesteps=learning_timesteps, 
+        tb_log_name=log_id, 
+        progress_bar=True
+    )
     save_dir = f'./runs/models/{log_id}'
     model.save(save_dir)
     print(f'Model saved at: {save_dir}')
